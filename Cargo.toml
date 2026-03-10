@@ -1,0 +1,28 @@
+[package]
+name = "open_fair_flow"
+version = "0.1.0"
+authors = ["hungdv98 <packetloss0709@gmail.com>"]
+edition = "2024"
+
+[dependencies]
+dioxus = { version = "0.7.3", features = ["router", "fullstack"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+uuid = { version = "1", features = ["v4", "js", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+rusqlite = { version = "0.32", features = ["bundled"] }
+reqwest = { version = "0.12", features = ["rustls-tls"] }
+base64 = "0.22"
+image = "0.25"
+tokio = { version = "1", features = ["fs", "process", "time"] }
+parquet = "54"
+arrow = "54"
+
+[features]
+default = ["web"]
+web = ["dioxus/web"]
+desktop = ["dioxus/desktop"]
+mobile = ["dioxus/mobile"]
+server = ["dioxus/server"]

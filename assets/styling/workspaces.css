@@ -1,0 +1,634 @@
+/* Workspace Styles */
+
+/* Editor container */
+.workspace-editor-container {
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #111;
+}
+
+.editor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    border-bottom: 1px solid #2a2a2a;
+    background: #0a0a0a;
+}
+
+/* Textarea fallback (hidden when CodeMirror loads) */
+.code-textarea {
+    width: 100%;
+    min-height: 400px;
+    background: #111;
+    color: #e0e0e0;
+    border: none;
+    padding: 16px;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: vertical;
+    outline: none;
+    tab-size: 4;
+}
+
+/* CodeMirror overrides for dark theme consistency */
+#code-editor-wrapper .CodeMirror {
+    background: #111 !important;
+    border: none !important;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    height: 400px;
+}
+
+#code-editor-wrapper .CodeMirror-gutters {
+    background: #0a0a0a !important;
+    border-right: 1px solid #2a2a2a !important;
+}
+
+#code-editor-wrapper .CodeMirror-linenumber {
+    color: #555 !important;
+}
+
+#code-editor-wrapper .CodeMirror-cursor {
+    border-left-color: #fff !important;
+}
+
+#code-editor-wrapper .CodeMirror-selected {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Output container */
+.workspace-output-container {
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #111;
+}
+
+/* Output tabs */
+.output-tabs {
+    display: flex;
+    border-bottom: 1px solid #2a2a2a;
+    background: #0a0a0a;
+}
+
+.output-tab {
+    padding: 8px 16px;
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 13px;
+    cursor: pointer;
+    transition: color 0.2s, border-bottom 0.2s;
+    border-bottom: 2px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.output-tab:hover {
+    color: #ccc;
+}
+
+.output-tab.active {
+    color: #fff;
+    border-bottom-color: #fff;
+}
+
+.tab-badge {
+    background: #2a2a2a;
+    color: #888;
+    font-size: 11px;
+    padding: 1px 6px;
+    border-radius: 8px;
+}
+
+/* Output content */
+.output-content {
+    padding: 16px;
+    min-height: 200px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+/* Console output */
+.console-output pre {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.console-output .stdout {
+    color: #e0e0e0;
+}
+
+.console-output .stderr {
+    color: #ff6b6b;
+    border-left: 3px solid #ff3333;
+    padding-left: 12px;
+    margin-top: 8px;
+}
+
+/* Plots output */
+.plots-output {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.plot-container {
+    background: #0a0a0a;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 8px;
+    max-width: 100%;
+}
+
+.plot-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+
+/* Table output */
+.table-output {
+    overflow-x: auto;
+}
+
+.table-output table,
+.table-output .df-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+}
+
+.table-output th {
+    background: #0a0a0a;
+    color: #888;
+    font-weight: 600;
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid #2a2a2a;
+    position: sticky;
+    top: 0;
+}
+
+.table-output td {
+    color: #e0e0e0;
+    padding: 6px 12px;
+    border-bottom: 1px solid #1a1a1a;
+}
+
+.table-output tr:hover td {
+    background: #1a1a1a;
+}
+
+/* ============================================
+   Federated Learning Sidebar
+   ============================================ */
+
+/* Editor + Sidebar layout */
+.workspace-editor-layout {
+    display: flex;
+    gap: 0;
+    align-items: stretch;
+}
+
+.workspace-editor-main {
+    flex: 1;
+    min-width: 0;
+}
+
+/* FL Sidebar */
+.fl-sidebar {
+    width: 340px;
+    min-width: 340px;
+    background: #111;
+    border: 1px solid #2a2a2a;
+    border-left: none;
+    border-radius: 0 12px 12px 0;
+    overflow-y: auto;
+    max-height: 460px;
+    display: flex;
+    flex-direction: column;
+}
+
+.fl-sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 1px solid #2a2a2a;
+    background: #0a0a0a;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.fl-sidebar-header h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    letter-spacing: 0.02em;
+}
+
+.fl-sidebar-close {
+    background: none;
+    border: none;
+    color: #555;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: color 0.2s, background 0.2s;
+    line-height: 1;
+}
+
+.fl-sidebar-close:hover {
+    color: #fff;
+    background: #2a2a2a;
+}
+
+.fl-sidebar-body {
+    padding: 12px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: 1;
+}
+
+/* FL Sections */
+.fl-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.fl-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.fl-hint {
+    font-size: 11px;
+    color: #555;
+    margin-top: 2px;
+}
+
+/* Stepper input */
+.fl-stepper {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #0a0a0a;
+}
+
+.fl-stepper button {
+    background: #0a0a0a;
+    border: none;
+    color: #888;
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fl-stepper button:hover {
+    background: #2a2a2a;
+    color: #fff;
+}
+
+.fl-stepper input {
+    width: 100%;
+    flex: 1;
+    text-align: center;
+    background: transparent;
+    border: none;
+    border-left: 1px solid #2a2a2a;
+    border-right: 1px solid #2a2a2a;
+    color: #fff;
+    font-size: 13px;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    padding: 6px 0;
+    outline: none;
+    -moz-appearance: textfield;
+}
+
+.fl-stepper input::-webkit-inner-spin-button,
+.fl-stepper input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Segmented toggle (IID / Non-IID) */
+.fl-toggle-group {
+    display: flex;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #0a0a0a;
+}
+
+.fl-toggle-btn {
+    flex: 1;
+    padding: 7px 12px;
+    background: transparent;
+    border: none;
+    color: #888;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    position: relative;
+}
+
+.fl-toggle-btn:not(:last-child) {
+    border-right: 1px solid #2a2a2a;
+}
+
+.fl-toggle-btn:hover {
+    color: #ccc;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.fl-toggle-btn.active {
+    background: #fff;
+    color: #000;
+    font-weight: 600;
+}
+
+/* Select dropdown */
+.fl-select {
+    width: 100%;
+    padding: 7px 12px;
+    background: #0a0a0a;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+}
+
+.fl-select:hover,
+.fl-select:focus {
+    border-color: #444;
+}
+
+.fl-select option {
+    background: #111;
+    color: #fff;
+}
+
+/* Small text input */
+.fl-input {
+    width: 100%;
+    padding: 7px 12px;
+    background: #0a0a0a;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 13px;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    outline: none;
+    transition: border-color 0.2s;
+    -moz-appearance: textfield;
+}
+
+.fl-input:hover,
+.fl-input:focus {
+    border-color: #444;
+}
+
+.fl-input::-webkit-inner-spin-button,
+.fl-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Model Summary Card */
+.fl-model-summary {
+    background: #0a0a0a;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.fl-model-summary-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.fl-model-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.fl-model-params {
+    font-size: 11px;
+    color: #888;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.fl-model-layers {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.fl-model-layer {
+    font-size: 11px;
+    color: #777;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    padding: 3px 8px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.fl-model-layer-name {
+    color: #aaa;
+}
+
+.fl-model-layer-shape {
+    color: #666;
+}
+
+/* Generate button */
+.fl-generate-btn {
+    width: 100%;
+    padding: 10px 16px;
+    background: #059669;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: auto;
+}
+
+.fl-generate-btn:hover {
+    background: #047857;
+}
+
+.fl-generate-btn:active {
+    background: #065f46;
+}
+
+/* FL config toggle button */
+.fl-config-toggle {
+    font-size: 12px;
+    border: 1px solid #2a2a2a;
+    color: #888;
+    background: transparent;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+
+.fl-config-toggle:hover {
+    border-color: #444;
+    color: #fff;
+}
+
+.fl-config-toggle.active {
+    border-color: #059669;
+    color: #059669;
+    background: rgba(5, 150, 105, 0.08);
+}
+
+/* Divider */
+.fl-divider {
+    height: 1px;
+    background: #2a2a2a;
+    margin: 2px 0;
+}
+
+/* Remove right border-radius from editor when sidebar is open */
+.workspace-editor-container.with-sidebar {
+    border-radius: 12px 0 0 12px;
+    border-right: none;
+}
+
+/* Responsive: stack on narrow screens */
+@media (max-width: 1024px) {
+    .workspace-editor-layout {
+        flex-direction: column;
+    }
+
+    .fl-sidebar {
+        width: 100%;
+        min-width: 100%;
+        border-left: 1px solid #2a2a2a;
+        border-top: none;
+        border-radius: 0 0 12px 12px;
+        max-height: 350px;
+    }
+
+    .workspace-editor-container.with-sidebar {
+        border-radius: 12px 12px 0 0;
+        border-right: 1px solid #2a2a2a;
+        border-bottom: none;
+    }
+}
+
+/* ============================================
+   XAI Output Section
+   ============================================ */
+
+.xai-output {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.xai-plots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 16px;
+}
+
+.xai-plot-card {
+    background: #0a0a0a;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 8px;
+    transition: border-color 0.2s;
+}
+
+.xai-plot-card:hover {
+    border-color: #444;
+}
+
+.xai-plot-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    display: block;
+}
+
+.xai-table-section {
+    border-top: 1px solid #2a2a2a;
+    padding-top: 16px;
+}
+
+.xai-section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+    .xai-plots-grid {
+        grid-template-columns: 1fr;
+    }
+}

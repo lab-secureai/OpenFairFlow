@@ -1,0 +1,29 @@
+:root {
+    --bg-primary: #000;
+    --bg-card: #111;
+    --bg-card-hover: #1a1a1a;
+    --border: #2a2a2a;
+    --border-hover: #444;
+    --text-primary: #fff;
+    --text-secondary: #888;
+    --text-muted: #555;
+    --danger: #ff3333;
+}
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
+
+::selection {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #333 transparent;
+}
