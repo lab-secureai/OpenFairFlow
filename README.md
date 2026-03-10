@@ -54,41 +54,6 @@ OpenFairFlow is a fullstack application built with **Dioxus 0.7** (Rust) that pr
 | Dataset Hub | HuggingFace Hub API |
 | Code Editor | CodeMirror |
 
-## Project Structure
-
-```
-OpenFairFlow/
-├── assets/              # Static assets and stylesheets
-│   └── styling/         # Component-specific CSS
-├── data/                # Downloaded / uploaded datasets
-│   └── datasets/        # Per-dataset directories (UUID-named)
-├── src/
-│   ├── main.rs          # App entry point, route definitions
-│   ├── db.rs            # SQLite database initialization & helpers
-│   ├── components/      # Reusable UI components
-│   │   ├── dataset_card.rs
-│   │   ├── dataset_form.rs
-│   │   ├── dataset_preview.rs
-│   │   └── dataset_viewer.rs
-│   ├── models/          # Data structures
-│   │   ├── dataset.rs
-│   │   └── workspace.rs
-│   ├── server/          # Server-side API endpoints
-│   │   ├── dataset_api.rs
-│   │   ├── workspace_api.rs
-│   │   └── python_runner_template.py
-│   └── views/           # Page-level components
-│       ├── home.rs
-│       ├── datasets.rs
-│       ├── dataset_detail.rs
-│       ├── workspaces.rs
-│       ├── workspace_detail.rs
-│       └── navbar.rs
-├── Cargo.toml
-├── Dioxus.toml
-└── tailwind.css
-```
-
 ## Prerequisites
 
 - **Rust** (stable toolchain)
@@ -103,7 +68,7 @@ OpenFairFlow/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-org/OpenFairFlow.git
+git clone https://github.com/lab-secureai/OpenFairFlow
 cd OpenFairFlow
 ```
 
