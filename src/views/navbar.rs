@@ -1,4 +1,5 @@
 use crate::Route;
+use crate::server::logout_server;
 use dioxus::prelude::*;
 
 const NAVBAR_CSS: Asset = asset!("/assets/styling/navbar.css");
@@ -6,6 +7,15 @@ const NAVBAR_CSS: Asset = asset!("/assets/styling/navbar.css");
 #[component]
 pub fn Navbar() -> Element {
     let mut mobile_open = use_signal(|| false);
+    let nav = use_navigator();
+
+    let on_logout = move |_| {
+        let nav = nav;
+        spawn(async move {
+            let _ = logout_server().await;
+            nav.push(Route::Login {});
+        });
+    };
 
     rsx! {
         document::Link { rel: "stylesheet", href: NAVBAR_CSS }
@@ -16,6 +26,7 @@ pub fn Navbar() -> Element {
                 Link { to: Route::Home {}, "Home" }
                 Link { to: Route::Datasets {}, "Datasets" }
                 Link { to: Route::Workspaces {}, "Workspaces" }
+                button { class: "nav-logout", onclick: on_logout, "Logout" }
             }
             button {
                 class: "hamburger",
@@ -36,6 +47,7 @@ pub fn Navbar() -> Element {
                 onclick: move |_| mobile_open.set(false),
                 "Workspaces"
             }
+            button { class: "nav-logout", onclick: on_logout, "Logout" }
         }
 
         Outlet::<Route> {}

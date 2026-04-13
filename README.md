@@ -75,7 +75,7 @@ cd OpenFairFlow
 ### 2. Install Python dependencies
 
 ```bash
-pip install torch torchvision matplotlib pandas pillow numpy scikit-learn shap
+pip install torch torchvision matplotlib pandas pillow numpy scikit-learn shap pyarrow
 ```
 
 ### 3. Run the application

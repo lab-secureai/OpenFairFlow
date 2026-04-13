@@ -1,7 +1,7 @@
-use dioxus::prelude::*;
-use crate::models::{Dataset, DatasetPreview, DatasetViewerPage};
 #[cfg(feature = "server")]
-use crate::models::{DatasetViewerRow, DatasetCell, ColumnInfo, ColumnType};
+use crate::models::{ColumnInfo, ColumnType, DatasetCell, DatasetViewerRow};
+use crate::models::{Dataset, DatasetPreview, DatasetViewerPage};
+use dioxus::prelude::*;
 
 #[post("/api/datasets/list")]
 pub async fn list_datasets_server() -> Result<Vec<Dataset>, ServerFnError> {
@@ -27,11 +27,15 @@ pub async fn upload_dataset_server(
 ) -> Result<Dataset, ServerFnError> {
     let id = uuid::Uuid::new_v4().to_string();
     let dir = format!("data/datasets/{id}");
-    tokio::fs::create_dir_all(&dir).await.map_err(|e| ServerFnError::new(format!("IO error: {e}")))?;
+    tokio::fs::create_dir_all(&dir)
+        .await
+        .map_err(|e| ServerFnError::new(format!("IO error: {e}")))?;
 
     let file_path = format!("{dir}/{file_name}");
     let file_size = file_data.len() as u64;
-    tokio::fs::write(&file_path, &file_data).await.map_err(|e| ServerFnError::new(format!("IO error: {e}")))?;
+    tokio::fs::write(&file_path, &file_data)
+        .await
+        .map_err(|e| ServerFnError::new(format!("IO error: {e}")))?;
 
     let dataset = Dataset {
         id,
@@ -49,7 +53,8 @@ pub async fn upload_dataset_server(
         status: "ready".to_string(),
     };
 
-    crate::db::insert_dataset(&dataset).map_err(|e| ServerFnError::new(format!("DB error: {e}")))?;
+    crate::db::insert_dataset(&dataset)
+        .map_err(|e| ServerFnError::new(format!("DB error: {e}")))?;
     Ok(dataset)
 }
 
@@ -76,7 +81,7 @@ pub async fn download_from_link_server(
         "huggingface_dataset".to_string()
     } else {
         url.split('/')
-            .last()
+            .next_back()
             .filter(|s| !s.is_empty())
             .unwrap_or("dataset")
             .to_string()
@@ -171,9 +176,8 @@ async fn download_huggingface_dataset(url: &str, dir: &str) -> Result<u64, Serve
     let client = reqwest::Client::new();
 
     // List all files via HF tree API
-    let tree_url = format!(
-        "https://huggingface.co/api/datasets/{repo_id}/tree/main?recursive=true"
-    );
+    let tree_url =
+        format!("https://huggingface.co/api/datasets/{repo_id}/tree/main?recursive=true");
     let tree_resp = client
         .get(&tree_url)
         .header("User-Agent", "fed-lab/0.1")
@@ -262,8 +266,8 @@ struct HfTreeEntry {
 #[post("/api/datasets/delete")]
 pub async fn delete_dataset_server(id: String) -> Result<(), ServerFnError> {
     // Get dataset to find file path
-    let dataset = crate::db::get_dataset(&id)
-        .map_err(|e| ServerFnError::new(format!("DB error: {e}")))?;
+    let dataset =
+        crate::db::get_dataset(&id).map_err(|e| ServerFnError::new(format!("DB error: {e}")))?;
 
     if let Some(ds) = dataset {
         // Remove the dataset directory
@@ -288,12 +292,24 @@ pub async fn get_preview_server(id: String) -> Result<DatasetPreview, ServerFnEr
     };
 
     // Basic summary from metadata
-    preview.summary.push(("Name".to_string(), dataset.name.clone()));
-    preview.summary.push(("Type".to_string(), dataset.dataset_type.clone()));
-    preview.summary.push(("Format".to_string(), dataset.format.clone()));
-    preview.summary.push(("Size".to_string(), dataset.human_readable_size()));
-    preview.summary.push(("Source".to_string(), dataset.source.clone()));
-    preview.summary.push(("Status".to_string(), dataset.status.clone()));
+    preview
+        .summary
+        .push(("Name".to_string(), dataset.name.clone()));
+    preview
+        .summary
+        .push(("Type".to_string(), dataset.dataset_type.clone()));
+    preview
+        .summary
+        .push(("Format".to_string(), dataset.format.clone()));
+    preview
+        .summary
+        .push(("Size".to_string(), dataset.human_readable_size()));
+    preview
+        .summary
+        .push(("Source".to_string(), dataset.source.clone()));
+    preview
+        .summary
+        .push(("Status".to_string(), dataset.status.clone()));
 
     if let Some(n) = dataset.num_samples {
         preview.summary.push(("Samples".to_string(), n.to_string()));
@@ -318,7 +334,9 @@ pub async fn get_preview_server(id: String) -> Result<DatasetPreview, ServerFnEr
                 if thumb.write_to(&mut buf, image::ImageFormat::Png).is_ok() {
                     use base64::Engine;
                     let b64 = base64::engine::general_purpose::STANDARD.encode(buf.into_inner());
-                    preview.sample_images.push(format!("data:image/png;base64,{b64}"));
+                    preview
+                        .sample_images
+                        .push(format!("data:image/png;base64,{b64}"));
                 }
             }
         }
@@ -331,7 +349,8 @@ pub async fn get_preview_server(id: String) -> Result<DatasetPreview, ServerFnEr
         if base_path.exists() {
             let splits = scan_parquet_splits(base_path);
             // Use the first split (prefer "train")
-            let parquet_path = splits.iter()
+            let parquet_path = splits
+                .iter()
                 .find(|(s, _)| s == "train")
                 .or_else(|| splits.first())
                 .map(|(_, p)| p.clone());
@@ -372,9 +391,12 @@ fn collect_images(dir: &std::path::Path, out: &mut Vec<std::path::PathBuf>, max:
 
 /// Extract sample images and class distribution from a parquet file for the preview component
 #[cfg(feature = "server")]
-fn read_parquet_preview(path: &std::path::Path, preview: &mut DatasetPreview) -> Result<(), Box<dyn std::error::Error>> {
-    use parquet::file::reader::SerializedFileReader;
+fn read_parquet_preview(
+    path: &std::path::Path,
+    preview: &mut DatasetPreview,
+) -> Result<(), Box<dyn std::error::Error>> {
     use parquet::file::reader::FileReader;
+    use parquet::file::reader::SerializedFileReader;
     use parquet::record::Field;
 
     let file = std::fs::File::open(path)?;
@@ -389,10 +411,11 @@ fn read_parquet_preview(path: &std::path::Path, preview: &mut DatasetPreview) ->
     if let parquet::schema::types::Type::GroupType { fields, .. } = schema_root {
         for field in fields {
             let name = field.name().to_string();
-            if let parquet::schema::types::Type::GroupType { fields: sub, .. } = field.as_ref() {
-                if sub.iter().any(|f| f.name() == "bytes") && image_col.is_none() {
-                    image_col = Some(name.clone());
-                }
+            if let parquet::schema::types::Type::GroupType { fields: sub, .. } = field.as_ref()
+                && sub.iter().any(|f| f.name() == "bytes")
+                && image_col.is_none()
+            {
+                image_col = Some(name.clone());
             }
             if name == "label" || name == "labels" {
                 label_col = Some(name.clone());
@@ -406,45 +429,47 @@ fn read_parquet_preview(path: &std::path::Path, preview: &mut DatasetPreview) ->
     let max_label_scan = 5000; // Scan up to 5000 rows for class distribution
 
     for _ in 0..max_label_scan {
-        let Some(row_result) = row_iter.next() else { break };
+        let Some(row_result) = row_iter.next() else {
+            break;
+        };
         let row = row_result?;
 
         // Extract sample images from first 12 rows
-        if preview.sample_images.len() < max_samples {
-            if let Some(ref img_name) = image_col {
-                if let Some((_, field)) = row.get_column_iter().find(|(n, _)| *n == img_name) {
-                    if let Field::Group(group) = field {
-                        for (n, sub) in group.get_column_iter() {
-                            if n == "bytes" {
-                                if let Field::Bytes(bytes) = sub {
-                                    if let Ok(img) = image::load_from_memory(bytes.data()) {
-                                        let thumb = img.thumbnail(64, 64);
-                                        let mut buf = std::io::Cursor::new(Vec::new());
-                                        if thumb.write_to(&mut buf, image::ImageFormat::Png).is_ok() {
-                                            use base64::Engine;
-                                            let b64 = base64::engine::general_purpose::STANDARD.encode(buf.into_inner());
-                                            preview.sample_images.push(format!("data:image/png;base64,{b64}"));
-                                        }
-                                    }
-                                }
-                            }
-                        }
+        if preview.sample_images.len() < max_samples
+            && let Some(ref img_name) = image_col
+            && let Some((_, field)) = row.get_column_iter().find(|(n, _)| *n == img_name)
+            && let Field::Group(group) = field
+        {
+            for (n, sub) in group.get_column_iter() {
+                if n == "bytes"
+                    && let Field::Bytes(bytes) = sub
+                    && let Ok(img) = image::load_from_memory(bytes.data())
+                {
+                    let thumb = img.thumbnail(64, 64);
+                    let mut buf = std::io::Cursor::new(Vec::new());
+                    if thumb.write_to(&mut buf, image::ImageFormat::Png).is_ok() {
+                        use base64::Engine;
+                        let b64 =
+                            base64::engine::general_purpose::STANDARD.encode(buf.into_inner());
+                        preview
+                            .sample_images
+                            .push(format!("data:image/png;base64,{b64}"));
                     }
                 }
             }
         }
 
         // Count labels for class distribution
-        if let Some(ref lbl_name) = label_col {
-            if let Some((_, field)) = row.get_column_iter().find(|(n, _)| *n == lbl_name) {
-                let label_str = match field {
-                    Field::Int(v) => v.to_string(),
-                    Field::Long(v) => v.to_string(),
-                    Field::Str(s) => s.clone(),
-                    other => format!("{other}"),
-                };
-                *label_counts.entry(label_str).or_insert(0) += 1;
-            }
+        if let Some(ref lbl_name) = label_col
+            && let Some((_, field)) = row.get_column_iter().find(|(n, _)| *n == lbl_name)
+        {
+            let label_str = match field {
+                Field::Int(v) => v.to_string(),
+                Field::Long(v) => v.to_string(),
+                Field::Str(s) => s.clone(),
+                other => format!("{other}"),
+            };
+            *label_counts.entry(label_str).or_insert(0) += 1;
         }
     }
 
@@ -453,7 +478,9 @@ fn read_parquet_preview(path: &std::path::Path, preview: &mut DatasetPreview) ->
         let mut sorted: Vec<(String, u32)> = label_counts.into_iter().collect();
         sorted.sort_by(|a, b| {
             // Try numeric sort first, fall back to string sort
-            a.0.parse::<i64>().ok().cmp(&b.0.parse::<i64>().ok())
+            a.0.parse::<i64>()
+                .ok()
+                .cmp(&b.0.parse::<i64>().ok())
                 .then_with(|| a.0.cmp(&b.0))
         });
         preview.class_distribution = sorted;
@@ -500,18 +527,28 @@ pub async fn get_dataset_viewer_server(
         .map(|(_, p)| p.clone())
         .ok_or_else(|| ServerFnError::new("Split not found"))?;
 
-    read_parquet_page(&parquet_path, &active_split, &available_splits, offset, limit)
+    read_parquet_page(
+        &parquet_path,
+        &active_split,
+        &available_splits,
+        offset,
+        limit,
+    )
 }
 
 #[cfg(feature = "server")]
 fn scan_parquet_splits(dir: &std::path::Path) -> Vec<(String, std::path::PathBuf)> {
-    let mut splits: std::collections::BTreeMap<String, std::path::PathBuf> = std::collections::BTreeMap::new();
+    let mut splits: std::collections::BTreeMap<String, std::path::PathBuf> =
+        std::collections::BTreeMap::new();
     collect_parquet_files(dir, &mut splits);
     splits.into_iter().collect()
 }
 
 #[cfg(feature = "server")]
-fn collect_parquet_files(dir: &std::path::Path, out: &mut std::collections::BTreeMap<String, std::path::PathBuf>) {
+fn collect_parquet_files(
+    dir: &std::path::Path,
+    out: &mut std::collections::BTreeMap<String, std::path::PathBuf>,
+) {
     if let Ok(entries) = std::fs::read_dir(dir) {
         for entry in entries.flatten() {
             let path = entry.path();
@@ -539,8 +576,8 @@ fn read_parquet_page(
     offset: u64,
     limit: u64,
 ) -> Result<DatasetViewerPage, ServerFnError> {
-    use parquet::file::reader::SerializedFileReader;
     use parquet::file::reader::FileReader;
+    use parquet::file::reader::SerializedFileReader;
     use std::fs::File;
 
     let file = File::open(path)
@@ -591,7 +628,10 @@ fn read_parquet_page(
         for field in fields {
             let field_name = field.name().to_string();
             top_level_names.push(field_name.clone());
-            if let parquet::schema::types::Type::GroupType { fields: sub_fields, .. } = field.as_ref() {
+            if let parquet::schema::types::Type::GroupType {
+                fields: sub_fields, ..
+            } = field.as_ref()
+            {
                 let has_bytes = sub_fields.iter().any(|f| f.name() == "bytes");
                 if has_bytes {
                     image_col_names.push(field_name);
@@ -605,20 +645,27 @@ fn read_parquet_page(
         .iter()
         .map(|name| {
             if image_col_names.contains(name) {
-                ColumnInfo { name: name.clone(), col_type: ColumnType::Image }
+                ColumnInfo {
+                    name: name.clone(),
+                    col_type: ColumnType::Image,
+                }
             } else {
                 // Find from the previously detected columns
                 columns
                     .iter()
                     .find(|c| &c.name == name)
                     .cloned()
-                    .unwrap_or(ColumnInfo { name: name.clone(), col_type: ColumnType::Text })
+                    .unwrap_or(ColumnInfo {
+                        name: name.clone(),
+                        col_type: ColumnType::Text,
+                    })
             }
         })
         .collect();
 
     // Read rows using row iter
-    let mut row_iter = reader.get_row_iter(None)
+    let mut row_iter = reader
+        .get_row_iter(None)
         .map_err(|e| ServerFnError::new(format!("Parquet row iter error: {e}")))?;
 
     // Skip to offset
@@ -630,12 +677,17 @@ fn read_parquet_page(
 
     let mut rows: Vec<DatasetViewerRow> = Vec::new();
     for i in 0..limit {
-        let Some(row_result) = row_iter.next() else { break };
+        let Some(row_result) = row_iter.next() else {
+            break;
+        };
         let row = row_result.map_err(|e| ServerFnError::new(format!("Row read error: {e}")))?;
 
         let mut cells: Vec<DatasetCell> = Vec::new();
         for col_info in &columns {
-            let cell = match row.get_column_iter().find(|(name, _)| *name == &col_info.name) {
+            let cell = match row
+                .get_column_iter()
+                .find(|(name, _)| *name == &col_info.name)
+            {
                 Some((_, field)) => field_to_cell(field, &col_info.col_type),
                 None => DatasetCell::Text("—".to_string()),
             };
@@ -668,19 +720,19 @@ fn field_to_cell(field: &parquet::record::Field, col_type: &ColumnType) -> Datas
             // Image is a Group with a "bytes" sub-field
             if let Field::Group(row) = field {
                 for (name, sub_field) in row.get_column_iter() {
-                    if name == "bytes" {
-                        if let Field::Bytes(bytes) = sub_field {
-                            // Resize and encode as base64 thumbnail
-                            let raw = bytes.data();
-                            if let Ok(img) = image::load_from_memory(raw) {
-                                let thumb = img.thumbnail(64, 64);
-                                let mut buf = std::io::Cursor::new(Vec::new());
-                                if thumb.write_to(&mut buf, image::ImageFormat::Png).is_ok() {
-                                    use base64::Engine;
-                                    let b64 = base64::engine::general_purpose::STANDARD
-                                        .encode(buf.into_inner());
-                                    return DatasetCell::Image(format!("data:image/png;base64,{b64}"));
-                                }
+                    if name == "bytes"
+                        && let Field::Bytes(bytes) = sub_field
+                    {
+                        // Resize and encode as base64 thumbnail
+                        let raw = bytes.data();
+                        if let Ok(img) = image::load_from_memory(raw) {
+                            let thumb = img.thumbnail(64, 64);
+                            let mut buf = std::io::Cursor::new(Vec::new());
+                            if thumb.write_to(&mut buf, image::ImageFormat::Png).is_ok() {
+                                use base64::Engine;
+                                let b64 = base64::engine::general_purpose::STANDARD
+                                    .encode(buf.into_inner());
+                                return DatasetCell::Image(format!("data:image/png;base64,{b64}"));
                             }
                         }
                     }

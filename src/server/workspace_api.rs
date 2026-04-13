@@ -1,5 +1,5 @@
+use crate::models::{ExecutionResult, Workspace};
 use dioxus::prelude::*;
-use crate::models::{Workspace, ExecutionResult};
 
 #[post("/api/workspaces/list")]
 pub async fn list_workspaces_server() -> Result<Vec<Workspace>, ServerFnError> {
@@ -31,8 +31,7 @@ pub async fn create_workspace_server(
         updated_at: now,
     };
 
-    crate::db::insert_workspace(&ws)
-        .map_err(|e| ServerFnError::new(format!("DB error: {e}")))?;
+    crate::db::insert_workspace(&ws).map_err(|e| ServerFnError::new(format!("DB error: {e}")))?;
 
     Ok(ws)
 }
@@ -45,12 +44,14 @@ pub async fn save_workspace_code_server(id: String, code: String) -> Result<(), 
 
 #[post("/api/workspaces/delete")]
 pub async fn delete_workspace_server(id: String) -> Result<(), ServerFnError> {
-    crate::db::delete_workspace_db(&id)
-        .map_err(|e| ServerFnError::new(format!("DB error: {e}")))
+    crate::db::delete_workspace_db(&id).map_err(|e| ServerFnError::new(format!("DB error: {e}")))
 }
 
 #[post("/api/workspaces/run")]
-pub async fn run_python_server(workspace_id: String, code: String) -> Result<ExecutionResult, ServerFnError> {
+pub async fn run_python_server(
+    workspace_id: String,
+    code: String,
+) -> Result<ExecutionResult, ServerFnError> {
     let result = run_python_impl(workspace_id.clone(), code).await?;
     // Persist the result so it can be restored later
     #[cfg(feature = "server")]
@@ -63,7 +64,9 @@ pub async fn run_python_server(workspace_id: String, code: String) -> Result<Exe
 }
 
 #[post("/api/workspaces/last-run-result")]
-pub async fn get_last_run_result_server(workspace_id: String) -> Result<Option<ExecutionResult>, ServerFnError> {
+pub async fn get_last_run_result_server(
+    workspace_id: String,
+) -> Result<Option<ExecutionResult>, ServerFnError> {
     #[cfg(feature = "server")]
     {
         let json_opt = crate::db::get_workspace_run_result(&workspace_id)
@@ -84,7 +87,10 @@ pub async fn get_last_run_result_server(workspace_id: String) -> Result<Option<E
 }
 
 #[cfg(feature = "server")]
-async fn run_python_impl(workspace_id: String, code: String) -> Result<ExecutionResult, ServerFnError> {
+async fn run_python_impl(
+    workspace_id: String,
+    code: String,
+) -> Result<ExecutionResult, ServerFnError> {
     use std::io::Write;
 
     // Look up workspace to get dataset_id
@@ -99,25 +105,50 @@ async fn run_python_impl(workspace_id: String, code: String) -> Result<Execution
     let mut parquet_files: Vec<String> = Vec::new();
     if base_path.exists() {
         collect_parquet_files_recursive(base_path, &mut parquet_files);
+    } else {
+        eprintln!(
+            "[OpenFairFlow] WARNING: Dataset directory does not exist: {}",
+            base_dir
+        );
+    }
+
+    if parquet_files.is_empty() {
+        let reason = if !base_path.exists() {
+            format!(
+                "Dataset directory not found: '{}'. Ensure dataset files are deployed to the server.",
+                base_dir
+            )
+        } else {
+            format!(
+                "No .parquet files found in '{}'. The dataset may not have been converted to parquet format.",
+                base_dir
+            )
+        };
+        return Ok(ExecutionResult {
+            stdout: String::new(),
+            stderr: reason,
+            plots: Vec::new(),
+            table_html: None,
+            xai_plots: Vec::new(),
+            xai_html: None,
+        });
     }
 
     // Convert to absolute paths so Python can find them regardless of cwd
     let parquet_files: Vec<String> = parquet_files
         .iter()
         .filter_map(|p| {
-            std::path::Path::new(p)
-                .canonicalize()
-                .ok()
-                .map(|abs| {
-                    let s = abs.to_string_lossy().replace('\\', "/");
-                    // Strip Windows \\?\ prefix
-                    s.strip_prefix("//?/").unwrap_or(&s).to_string()
-                })
+            std::path::Path::new(p).canonicalize().ok().map(|abs| {
+                let s = abs.to_string_lossy().replace('\\', "/");
+                // Strip Windows \\?\ prefix
+                s.strip_prefix("//?/").unwrap_or(&s).to_string()
+            })
         })
         .collect();
 
     // Build the Python runner script
-    let parquet_paths_json = serde_json::to_string(&parquet_files).unwrap_or_else(|_| "[]".to_string());
+    let parquet_paths_json =
+        serde_json::to_string(&parquet_files).unwrap_or_else(|_| "[]".to_string());
 
     // Compute absolute path for the dataset directory
     let abs_base = std::path::Path::new(&base_dir)
@@ -125,7 +156,10 @@ async fn run_python_impl(workspace_id: String, code: String) -> Result<Execution
         .unwrap_or_else(|_| std::path::PathBuf::from(&base_dir));
     let abs_base_str = abs_base.to_string_lossy().replace('\\', "/");
     // Strip Windows \\?\ prefix
-    let abs_base_str = abs_base_str.strip_prefix("//?/").unwrap_or(&abs_base_str).to_string();
+    let abs_base_str = abs_base_str
+        .strip_prefix("//?/")
+        .unwrap_or(&abs_base_str)
+        .to_string();
 
     let user_code_escaped = code.replace("'''", r"\'\'\'");
 
@@ -183,9 +217,7 @@ async fn run_python_impl(workspace_id: String, code: String) -> Result<Execution
                                     .collect()
                             })
                             .unwrap_or_default(),
-                        table_html: parsed["table_html"]
-                            .as_str()
-                            .map(|s| s.to_string()),
+                        table_html: parsed["table_html"].as_str().map(|s| s.to_string()),
                         xai_plots: parsed["xai_plots"]
                             .as_array()
                             .map(|arr| {
@@ -194,9 +226,7 @@ async fn run_python_impl(workspace_id: String, code: String) -> Result<Execution
                                     .collect()
                             })
                             .unwrap_or_default(),
-                        xai_html: parsed["xai_html"]
-                            .as_str()
-                            .map(|s| s.to_string()),
+                        xai_html: parsed["xai_html"].as_str().map(|s| s.to_string()),
                     });
                 }
             }
@@ -211,26 +241,24 @@ async fn run_python_impl(workspace_id: String, code: String) -> Result<Execution
                 xai_html: None,
             })
         }
-        Ok(Err(e)) => {
-            Ok(ExecutionResult {
-                stdout: String::new(),
-                stderr: format!("Failed to execute Python: {e}\nMake sure Python is installed and accessible in PATH."),
-                plots: Vec::new(),
-                table_html: None,
-                xai_plots: Vec::new(),
-                xai_html: None,
-            })
-        }
-        Err(_) => {
-            Ok(ExecutionResult {
-                stdout: String::new(),
-                stderr: "Execution timed out after 30 minutes.".to_string(),
-                plots: Vec::new(),
-                table_html: None,
-                xai_plots: Vec::new(),
-                xai_html: None,
-            })
-        }
+        Ok(Err(e)) => Ok(ExecutionResult {
+            stdout: String::new(),
+            stderr: format!(
+                "Failed to execute Python: {e}\nMake sure Python is installed and accessible in PATH."
+            ),
+            plots: Vec::new(),
+            table_html: None,
+            xai_plots: Vec::new(),
+            xai_html: None,
+        }),
+        Err(_) => Ok(ExecutionResult {
+            stdout: String::new(),
+            stderr: "Execution timed out after 30 minutes.".to_string(),
+            plots: Vec::new(),
+            table_html: None,
+            xai_plots: Vec::new(),
+            xai_html: None,
+        }),
     }
 }
 
@@ -241,10 +269,10 @@ fn collect_parquet_files_recursive(dir: &std::path::Path, out: &mut Vec<String>)
             let path = entry.path();
             if path.is_dir() {
                 collect_parquet_files_recursive(&path, out);
-            } else if path.extension().is_some_and(|ext| ext == "parquet") {
-                if let Some(s) = path.to_str() {
-                    out.push(s.replace('\\', "/"));
-                }
+            } else if path.extension().is_some_and(|ext| ext == "parquet")
+                && let Some(s) = path.to_str()
+            {
+                out.push(s.replace('\\', "/"));
             }
         }
     }

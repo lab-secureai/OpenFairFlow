@@ -1,7 +1,10 @@
-use dioxus::prelude::*;
 use crate::Route;
-use crate::server::{get_workspace_server, save_workspace_code_server, run_python_server, delete_workspace_server, get_last_run_result_server};
 use crate::models::ExecutionResult;
+use crate::server::{
+    delete_workspace_server, get_last_run_result_server, get_workspace_server, run_python_server,
+    save_workspace_code_server,
+};
+use dioxus::prelude::*;
 
 const WORKSPACES_CSS: Asset = asset!("/assets/styling/workspaces.css");
 
@@ -223,7 +226,8 @@ class Net(nn.Module):
     };
 
     let partition_code = if data_dist == "non_iid" {
-        format!(r#"
+        format!(
+            r#"
 # --- Non-IID partitioning: sort by label, assign ~2 classes per client ---
 def partition_data_non_iid(dataset, num_clients, num_classes_per_client=2):
     labels = dataset.tensors[1].numpy()
@@ -250,9 +254,12 @@ def partition_data_non_iid(dataset, num_clients, num_classes_per_client=2):
 
 client_datasets = partition_data_non_iid(train_dataset, {num_clients})
 print(f"Data distribution: Non-IID (~2 classes per client)")
-"#, num_clients = num_clients)
+"#,
+            num_clients = num_clients
+        )
     } else {
-        format!(r#"
+        format!(
+            r#"
 # --- IID partitioning: random equal splits ---
 def partition_data_iid(dataset, num_clients):
     indices = np.random.permutation(len(dataset)).tolist()
@@ -261,7 +268,9 @@ def partition_data_iid(dataset, num_clients):
 
 client_datasets = partition_data_iid(train_dataset, {num_clients})
 print(f"Data distribution: IID (random equal splits)")
-"#, num_clients = num_clients)
+"#,
+            num_clients = num_clients
+        )
     };
 
     format!(
@@ -792,7 +801,11 @@ print("=" * 50)
 "##,
         num_clients = num_clients,
         num_rounds = num_rounds,
-        data_dist_label = if data_dist == "non_iid" { "Non-IID" } else { "IID" },
+        data_dist_label = if data_dist == "non_iid" {
+            "Non-IID"
+        } else {
+            "IID"
+        },
         lr = learning_rate,
         bs = batch_size,
         model_def = model_def,
@@ -810,7 +823,8 @@ fn WorkspaceEditor(workspace: crate::models::Workspace, id: String) -> Element {
     let ds_name = workspace.dataset_name.clone();
 
     let initial_code = if workspace.code.is_empty() {
-        format!(r#"# Dataset '{}' is pre-loaded as `df`
+        format!(
+            r#"# Dataset '{}' is pre-loaded as `df`
 # Available splits: splits.keys()
 import pandas as pd
 import numpy as np
@@ -821,7 +835,9 @@ print("Columns:", df.columns.tolist())
 # Create a summary table (visible in the Table tab)
 summary = df.describe()
 print(summary)
-"#, workspace.dataset_name)
+"#,
+            workspace.dataset_name
+        )
     } else {
         workspace.code.clone()
     };
@@ -839,10 +855,10 @@ print(summary)
     });
     // Seed result signal from saved data (runs once when loaded)
     use_effect(move || {
-        if let Some(Ok(Some(saved))) = saved_result() {
-            if result().is_none() {
-                result.set(Some(saved));
-            }
+        if let Some(Ok(Some(saved))) = saved_result()
+            && result().is_none()
+        {
+            result.set(Some(saved));
         }
     });
 
@@ -870,8 +886,9 @@ print(summary)
                         ta.dispatchEvent(new Event('input', { bubbles: true }));
                     }
                 }
-                return true;"#
-            ).await;
+                return true;"#,
+            )
+            .await;
             let current_code = code();
             is_running.set(true);
             let _ = save_workspace_code_server(ws_id.clone(), current_code.clone()).await;
@@ -904,8 +921,9 @@ print(summary)
                         ta.dispatchEvent(new Event('input', { bubbles: true }));
                     }
                 }
-                return true;"#
-            ).await;
+                return true;"#,
+            )
+            .await;
             let _ = save_workspace_code_server(ws_id, code()).await;
             is_saving.set(false);
         }
@@ -1094,7 +1112,10 @@ fn FLConfigPanel(
         (
             info.name.to_string(),
             info.params.to_string(),
-            info.layers.iter().map(|(a, b)| (a.to_string(), b.to_string())).collect::<Vec<_>>(),
+            info.layers
+                .iter()
+                .map(|(a, b)| (a.to_string(), b.to_string()))
+                .collect::<Vec<_>>(),
         )
     });
 
@@ -1443,8 +1464,9 @@ fn CodeMirrorInit(mut code: Signal<String>) -> Element {
                     window._cmEditor.toTextArea();
                     window._cmEditor = null;
                 }
-                return true;"#
-            ).await;
+                return true;"#,
+            )
+            .await;
 
             // Poll until CodeMirror CDN script is loaded and textarea exists,
             // then dynamically load the Python mode to avoid race conditions
@@ -1468,7 +1490,7 @@ fn CodeMirrorInit(mut code: Signal<String>) -> Element {
                     }
                     return false;
                 }
-                return await waitForCM();"#
+                return await waitForCM();"#,
             );
             let is_ready = ready.await;
             if is_ready.is_err() {

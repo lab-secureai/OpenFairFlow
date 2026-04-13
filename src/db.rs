@@ -1,5 +1,5 @@
 #[cfg(feature = "server")]
-use rusqlite::{params, Connection};
+use rusqlite::{Connection, params};
 
 #[cfg(feature = "server")]
 use crate::models::Dataset;
@@ -49,9 +49,7 @@ pub fn init_db() -> Result<(), rusqlite::Error> {
         )",
     )?;
     // Migration: add last_run_result column if missing
-    let _ = conn.execute_batch(
-        "ALTER TABLE workspaces ADD COLUMN last_run_result TEXT",
-    );
+    let _ = conn.execute_batch("ALTER TABLE workspaces ADD COLUMN last_run_result TEXT");
     Ok(())
 }
 
@@ -138,11 +136,15 @@ pub fn get_dataset(id: &str) -> Result<Option<Dataset>, rusqlite::Error> {
             status: row.get(12)?,
         })
     })?;
-    Ok(rows.next().transpose()?)
+    rows.next().transpose()
 }
 
 #[cfg(feature = "server")]
-pub fn update_dataset_status(id: &str, status: &str, file_size: Option<u64>) -> Result<(), rusqlite::Error> {
+pub fn update_dataset_status(
+    id: &str,
+    status: &str,
+    file_size: Option<u64>,
+) -> Result<(), rusqlite::Error> {
     let conn = get_connection()?;
     if let Some(size) = file_size {
         conn.execute(
@@ -173,7 +175,15 @@ pub fn insert_workspace(ws: &Workspace) -> Result<(), rusqlite::Error> {
     conn.execute(
         "INSERT INTO workspaces (id, name, dataset_id, dataset_name, code, created_at, updated_at)
          VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
-        params![ws.id, ws.name, ws.dataset_id, ws.dataset_name, ws.code, ws.created_at, ws.updated_at],
+        params![
+            ws.id,
+            ws.name,
+            ws.dataset_id,
+            ws.dataset_name,
+            ws.code,
+            ws.created_at,
+            ws.updated_at
+        ],
     )?;
     Ok(())
 }
@@ -217,7 +227,7 @@ pub fn get_workspace(id: &str) -> Result<Option<Workspace>, rusqlite::Error> {
             updated_at: row.get(6)?,
         })
     })?;
-    Ok(rows.next().transpose()?)
+    rows.next().transpose()
 }
 
 #[cfg(feature = "server")]
@@ -244,9 +254,7 @@ pub fn save_workspace_run_result(id: &str, result_json: &str) -> Result<(), rusq
 #[cfg(feature = "server")]
 pub fn get_workspace_run_result(id: &str) -> Result<Option<String>, rusqlite::Error> {
     let conn = get_connection()?;
-    let mut stmt = conn.prepare(
-        "SELECT last_run_result FROM workspaces WHERE id = ?1",
-    )?;
+    let mut stmt = conn.prepare("SELECT last_run_result FROM workspaces WHERE id = ?1")?;
     let mut rows = stmt.query_map(params![id], |row| {
         let val: Option<String> = row.get(0)?;
         Ok(val)

@@ -1,26 +1,26 @@
+use crate::server::{download_from_link_server, upload_dataset_server};
 use dioxus::prelude::*;
-use crate::server::{upload_dataset_server, download_from_link_server};
 
 #[component]
 pub fn DatasetForm(on_success: EventHandler) -> Element {
     let mut active_tab = use_signal(|| "upload");
-    let mut name = use_signal(|| String::new());
-    let mut description = use_signal(|| String::new());
+    let mut name = use_signal(String::new);
+    let mut description = use_signal(String::new);
     let mut dataset_type = use_signal(|| "MNIST".to_string());
     let mut format = use_signal(|| "binary".to_string());
-    let mut tags_input = use_signal(|| String::new());
-    let mut num_samples = use_signal(|| String::new());
-    let mut num_classes = use_signal(|| String::new());
+    let mut tags_input = use_signal(String::new);
+    let mut num_samples = use_signal(String::new);
+    let mut num_classes = use_signal(String::new);
 
     // Upload-specific
-    let mut file_data = use_signal(|| Vec::<u8>::new());
-    let mut file_name = use_signal(|| String::new());
+    let mut file_data = use_signal(Vec::<u8>::new);
+    let mut file_name = use_signal(String::new);
 
     // Link-specific
-    let mut url = use_signal(|| String::new());
+    let mut url = use_signal(String::new);
 
     let mut loading = use_signal(|| false);
-    let mut error_msg = use_signal(|| String::new());
+    let mut error_msg = use_signal(String::new);
 
     let handle_submit = move |_| async move {
         let name_val = name().trim().to_string();
@@ -54,7 +54,8 @@ pub fn DatasetForm(on_success: EventHandler) -> Element {
             }
             upload_dataset_server(
                 name_val, desc, ds_type, tags, fmt, samples, classes, data, fname,
-            ).await
+            )
+            .await
         } else {
             let url_val = url().trim().to_string();
             if url_val.is_empty() {
@@ -64,7 +65,8 @@ pub fn DatasetForm(on_success: EventHandler) -> Element {
             }
             download_from_link_server(
                 name_val, desc, ds_type, tags, fmt, samples, classes, url_val,
-            ).await
+            )
+            .await
         };
 
         loading.set(false);

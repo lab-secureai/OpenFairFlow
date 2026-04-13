@@ -1,7 +1,7 @@
-use dioxus::prelude::*;
-use crate::server::{get_dataset_server, delete_dataset_server};
-use crate::components::{DatasetPreviewComponent, DatasetViewer};
 use crate::Route;
+use crate::components::{DatasetPreviewComponent, DatasetViewer};
+use crate::server::{delete_dataset_server, get_dataset_server};
+use dioxus::prelude::*;
 
 #[component]
 pub fn DatasetDetail(id: String) -> Element {
@@ -46,7 +46,7 @@ pub fn DatasetDetail(id: String) -> Element {
                                 class: "border border-[#ff3333] text-[#ff3333] hover:bg-[#ff3333] hover:text-black font-medium py-2 px-4 rounded-lg transition-colors shrink-0",
                                 onclick: move |_| {
                                     let id = ds_id.clone();
-                                    let nav = nav.clone();
+                                    let nav = nav;
                                     async move {
                                         if let Ok(()) = delete_dataset_server(id).await {
                                             nav.push(Route::Datasets {});

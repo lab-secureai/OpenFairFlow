@@ -51,6 +51,13 @@ if splits:
     if df.empty and splits:
         df = next(iter(splits.values()))
 
+if df.empty:
+    raise RuntimeError(
+        f"No data loaded: DataFrame is empty. "
+        f"Searched {len(parquet_files)} parquet path(s): {parquet_files}. "
+        f"Check that the dataset files exist and are valid parquet files."
+    )
+
 # Patch matplotlib
 try:
     import matplotlib

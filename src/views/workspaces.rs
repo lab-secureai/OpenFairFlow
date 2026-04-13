@@ -1,51 +1,51 @@
-use dioxus::prelude::*;
 use crate::Route;
-use crate::server::{list_workspaces_server, create_workspace_server, delete_workspace_server, list_datasets_server};
+use crate::server::{
+    create_workspace_server, delete_workspace_server, list_datasets_server, list_workspaces_server,
+};
+use dioxus::prelude::*;
 
 const WORKSPACES_CSS: Asset = asset!("/assets/styling/workspaces.css");
 
 #[component]
 pub fn Workspaces() -> Element {
     let mut show_form = use_signal(|| false);
-    let mut workspaces = use_server_future(move || list_workspaces_server())?;
-    let datasets = use_resource(move || list_datasets_server());
+    let mut workspaces = use_server_future(list_workspaces_server)?;
+    let datasets = use_resource(list_datasets_server);
 
     // Form state
-    let mut ws_name = use_signal(|| String::new());
-    let mut ws_dataset_id = use_signal(|| String::new());
+    let mut ws_name = use_signal(String::new);
+    let mut ws_dataset_id = use_signal(String::new);
     let mut creating = use_signal(|| false);
     let mut error_msg = use_signal(|| Option::<String>::None);
 
-    let handle_create = move |_| {
-        async move {
-            let name = ws_name().trim().to_string();
-            let dataset_id = ws_dataset_id().trim().to_string();
+    let handle_create = move |_| async move {
+        let name = ws_name().trim().to_string();
+        let dataset_id = ws_dataset_id().trim().to_string();
 
-            if name.is_empty() {
-                error_msg.set(Some("Name is required".to_string()));
-                return;
-            }
-            if dataset_id.is_empty() {
-                error_msg.set(Some("Please select a dataset".to_string()));
-                return;
-            }
-
-            creating.set(true);
-            error_msg.set(None);
-
-            match create_workspace_server(name, dataset_id).await {
-                Ok(_) => {
-                    ws_name.set(String::new());
-                    ws_dataset_id.set(String::new());
-                    show_form.set(false);
-                    workspaces.restart();
-                }
-                Err(e) => {
-                    error_msg.set(Some(format!("Failed to create workspace: {e}")));
-                }
-            }
-            creating.set(false);
+        if name.is_empty() {
+            error_msg.set(Some("Name is required".to_string()));
+            return;
         }
+        if dataset_id.is_empty() {
+            error_msg.set(Some("Please select a dataset".to_string()));
+            return;
+        }
+
+        creating.set(true);
+        error_msg.set(None);
+
+        match create_workspace_server(name, dataset_id).await {
+            Ok(_) => {
+                ws_name.set(String::new());
+                ws_dataset_id.set(String::new());
+                show_form.set(false);
+                workspaces.restart();
+            }
+            Err(e) => {
+                error_msg.set(Some(format!("Failed to create workspace: {e}")));
+            }
+        }
+        creating.set(false);
     };
 
     rsx! {
@@ -191,8 +191,16 @@ fn WorkspaceCard(workspace: crate::models::Workspace, on_delete: EventHandler) -
     let mut confirming = use_signal(|| false);
     let ws_id = workspace.id.clone();
 
-    let created = workspace.created_at.split('T').next().unwrap_or(&workspace.created_at);
-    let updated = workspace.updated_at.split('T').next().unwrap_or(&workspace.updated_at);
+    let created = workspace
+        .created_at
+        .split('T')
+        .next()
+        .unwrap_or(&workspace.created_at);
+    let updated = workspace
+        .updated_at
+        .split('T')
+        .next()
+        .unwrap_or(&workspace.updated_at);
 
     rsx! {
         div { class: "card-surface rounded-xl p-6 group",

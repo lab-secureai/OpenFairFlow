@@ -4,6 +4,9 @@ pub use home::Home;
 mod navbar;
 pub use navbar::Navbar;
 
+mod login;
+pub use login::Login;
+
 mod datasets;
 pub use datasets::Datasets;
 

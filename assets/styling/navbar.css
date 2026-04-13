@@ -39,6 +39,23 @@
     color: #fff;
 }
 
+.nav-logout {
+    background: none;
+    border: 1px solid #333;
+    border-radius: 0.375rem;
+    color: #888;
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.25rem 0.75rem;
+    cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.nav-logout:hover {
+    color: #fff;
+    border-color: #555;
+}
+
 #navbar .hamburger {
     display: none;
     background: none;

@@ -1,12 +1,12 @@
-use dioxus::prelude::*;
-use crate::server::get_dataset_viewer_server;
 use crate::models::DatasetCell;
+use crate::server::get_dataset_viewer_server;
+use dioxus::prelude::*;
 
 const ROWS_PER_PAGE: u64 = 10;
 
 #[component]
 pub fn DatasetViewer(dataset_id: String) -> Element {
-    let mut current_split = use_signal(|| String::new());
+    let mut current_split = use_signal(String::new);
     let mut current_offset = use_signal(|| 0u64);
 
     let id = dataset_id.clone();

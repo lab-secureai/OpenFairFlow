@@ -4,8 +4,8 @@ use dioxus::prelude::*;
 
 #[component]
 pub fn Home() -> Element {
-    let datasets = use_server_future(move || list_datasets_server())?;
-    let workspaces = use_server_future(move || list_workspaces_server())?;
+    let datasets = use_server_future(list_datasets_server)?;
+    let workspaces = use_server_future(list_workspaces_server)?;
 
     let (total, ready, total_size, recent) = match datasets() {
         Some(Ok(ref list)) => {

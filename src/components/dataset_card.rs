@@ -1,6 +1,6 @@
-use dioxus::prelude::*;
-use crate::models::Dataset;
 use crate::Route;
+use crate::models::Dataset;
+use dioxus::prelude::*;
 
 #[component]
 pub fn DatasetCard(dataset: Dataset, on_delete: EventHandler) -> Element {
@@ -86,7 +86,7 @@ pub fn DatasetCard(dataset: Dataset, on_delete: EventHandler) -> Element {
                             class: "text-xs text-[#ff3333] hover:text-[#ff6666] font-medium",
                             onclick: move |_| {
                                 let id = ds_id.clone();
-                                let on_delete = on_delete.clone();
+                                let on_delete = on_delete;
                                 async move {
                                     if let Ok(()) = crate::server::delete_dataset_server(id).await {
                                         on_delete.call(());

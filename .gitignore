@@ -16,7 +16,6 @@ Thumbs.db
 
 # Environment
 .env
-.env.*
 
 # Application data & database
 /data/

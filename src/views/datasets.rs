@@ -1,13 +1,13 @@
-use dioxus::prelude::*;
-use crate::server::list_datasets_server;
 use crate::components::{DatasetCard, DatasetForm};
+use crate::server::list_datasets_server;
+use dioxus::prelude::*;
 
 const DATASETS_CSS: Asset = asset!("/assets/styling/datasets.css");
 
 #[component]
 pub fn Datasets() -> Element {
     let mut show_form = use_signal(|| false);
-    let mut datasets = use_server_future(move || list_datasets_server())?;
+    let mut datasets = use_server_future(list_datasets_server)?;
 
     rsx! {
         document::Link { rel: "stylesheet", href: DATASETS_CSS }
