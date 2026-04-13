@@ -1,5 +1,5 @@
 use crate::Route;
-use crate::server::logout_server;
+use crate::server::{check_auth_server, logout_server};
 use dioxus::prelude::*;
 
 const NAVBAR_CSS: Asset = asset!("/assets/styling/navbar.css");
@@ -8,6 +8,13 @@ const NAVBAR_CSS: Asset = asset!("/assets/styling/navbar.css");
 pub fn Navbar() -> Element {
     let mut mobile_open = use_signal(|| false);
     let nav = use_navigator();
+
+    // Client-side auth guard: redirect to /login if not authenticated
+    let auth = use_server_future(check_auth_server)?;
+    if let Some(Ok(false)) = auth() {
+        nav.push(Route::Login {});
+        return rsx! {};
+    }
 
     let on_logout = move |_| {
         let nav = nav;

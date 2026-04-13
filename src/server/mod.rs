@@ -5,4 +5,4 @@ mod workspace_api;
 pub use workspace_api::*;
 
 pub mod auth;
-pub use auth::{login_server, logout_server};
+pub use auth::{check_auth_server, login_server, logout_server};
